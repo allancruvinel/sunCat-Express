@@ -1,9 +1,14 @@
-// Importando o Express
-const express = require('express');
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import express from 'express';
+
+// Initialize Express app
 const app = express();
 
 // Middleware para JSON
 app.use(express.json());
+
 // Rota simples de GET
 app.get('/', (req, res) => {
     res.send('Hello World!');
@@ -20,10 +25,6 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCHzj77xG8u_sq9DNMCa_BqiE0wHkH9cVc",
@@ -39,25 +40,27 @@ const firebaseConfig = {
 const firebase = initializeApp(firebaseConfig);
 const auth = getAuth();
 
-// Handle form submission
-const form = document.getElementById('signup-form');
-const message = document.getElementById('signup-message');
+// Handle form submission (Client-side code assumed to be in the browser environment)
+if (typeof document !== 'undefined') {
+  const form = document.getElementById('signup-form');
+  const message = document.getElementById('signup-message');
 
-form.addEventListener('submit', (event) => {
-  event.preventDefault(); // Prevent form from submitting
+  form.addEventListener('submit', (event) => {
+    event.preventDefault(); // Prevent form from submitting
 
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-  createUserWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      // Successfully created user
-      const user = userCredential.user;
-      message.textContent = "Usuário criado com sucesso: " + user.email;
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      message.textContent = `Erro: ${errorCode} - ${errorMessage}`;
-    });
-});
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Successfully created user
+        const user = userCredential.user;
+        message.textContent = "Usuário criado com sucesso: " + user.email;
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        message.textContent = `Erro: ${errorCode} - ${errorMessage}`;
+      });
+  });
+}
