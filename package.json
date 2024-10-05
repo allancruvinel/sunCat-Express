@@ -14,7 +14,9 @@
   "dependencies": {
     "express": "^4.21.0",
     "express-validator": "^7.2.0",
-    "firebase": "^10.14.0"
+    "firebase": "^10.14.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
