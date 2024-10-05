@@ -19,6 +19,16 @@ app.post('/echo', (req, res) => {
     res.json({ message: 'Received', data: req.body });
 });
 
+
+// Rota para lidar com o POST do formulário
+app.post('/cadastro', (req, res) => {
+    console.log(req.body); // Mostra os dados enviados no terminal
+    res.json({ message: 'Dados recebidos', data: req.body });
+});
+
+
+  
+
 // Configuração da porta
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
