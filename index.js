@@ -1,11 +1,18 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import express from 'express';
+import path from 'path';
+import { initializeApp } from "firebase/app";
+import { fileURLToPath } from 'url'; 
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize Express app
 const app = express();
 
+app.use(express.static(path.join(__dirname, 'public')));
 // Middleware para JSON
 app.use(express.json());
 
@@ -14,10 +21,6 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-// Rota simples de POST
-app.post('/echo', (req, res) => {
-    res.json({ message: 'Received', data: req.body });
-});
 
 
 // Rota para lidar com o POST do formulário
@@ -26,6 +29,13 @@ app.post('/cadastro', (req, res) => {
     res.json({ message: 'Dados recebidos', data: req.body });
 });
 
+// Servir arquivos estáticos (HTML, JS, CSS) da pasta 'public'
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Rota simples de GET
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 
   
 
