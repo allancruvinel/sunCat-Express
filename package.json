@@ -12,9 +12,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-validator": "^7.2.0",
     "firebase": "^10.14.0",
+    "firebase-admin": "^12.6.0",
+    "groq-sdk": "^0.7.0",
+    "langchain": "^0.3.2",
+    "pg": "^8.13.0",
+    "punycode": "^2.3.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },

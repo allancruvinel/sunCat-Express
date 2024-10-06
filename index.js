@@ -6,6 +6,9 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import swaggerJsDoc from 'swagger-jsdoc'; // Importar swagger-jsdoc
 import swaggerUi from 'swagger-ui-express'; // Importar swagger-ui-express
+import admin from 'firebase-admin'; // Importar Firebase Admin SDK
+import { getGroqApiResponse } from './services/AIService.js';
+import pool from './db.js'; // Importa o pool de conexão
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,9 +24,16 @@ const firebaseConfig = {
     measurementId: "G-THWZQNJ6QV"
 };
 
-// Inicializa o Firebase
+// Inicializa o Firebase Auth
 const firebase = initializeApp(firebaseConfig);
 const auth = getAuth(firebase);
+
+// Inicializa o Firebase Admin para o Realtime Database
+admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: "https://suncat-3804a.firebaseio.com" // Substitua pelo URL do seu banco de dados
+});
+const db = admin.database();
 
 // Inicializa o aplicativo Express
 const app = express();
@@ -87,11 +97,20 @@ app.post('/cadastro',
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { email, password } = req.body;
+        const { email, password,city,country } = req.body;
 
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
             const user = userCredential.user;
+            
+            const query = `
+            INSERT INTO usuario (email, city, country)
+            VALUES ($1, $2, $3) RETURNING *;
+            `;
+            const values = [email, city, country];
+            const result = await pool.query(query, values);  // Usando o pool de conexão importado
+
             console.log('Usuário criado:', user.email);
             res.json({ message: 'Usuário criado com sucesso!', user: user.email });
         } catch (error) {
@@ -139,7 +158,7 @@ app.post('/cadastro',
  *       401:
  *         description: Erro de autenticação
  */
-app.post('/login', 
+ app.post('/login', 
     body('email').isEmail().withMessage('Email inválido'),
     body('password').exists().withMessage('A senha é obrigatória'),
     async (req, res) => {
@@ -154,6 +173,7 @@ app.post('/login',
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             console.log('Usuário autenticado:', user.email);
+            console.log("user ",user);
             res.json({ message: 'Login bem-sucedido!', user: user.email });
         } catch (error) {
             let errorMessage;
@@ -169,9 +189,78 @@ app.post('/login',
             }
             console.error('Erro ao autenticar usuário:', errorMessage);
             res.status(401).json({ error: errorMessage });
-        }
+        }    
+ });
+
+/**
+ * @swagger
+ * /niveis:
+ *   get:
+ *     summary: Retorna todos os níveis de dificuldade
+ *     responses:
+ *       200:
+ *         description: Uma lista de níveis de dificuldade
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   nivel:
+ *                     type: string
+ *                     example: "Fácil"
+ *                   nivel_en:
+ *                     type: string
+ *                     example: "Easy"
+ */
+app.get('/niveis', (req, res) => {
+    const niveis = [
+        { nivel: 'Fácil', nivel_en: 'Easy' },
+        { nivel: 'Médio', nivel_en: 'Medium' },
+        { nivel: 'Difícil', nivel_en: 'Hard' }
+    ];
+    
+    res.json(niveis);
 });
 
+// Rota para obter pergunta e resposta do ChatGPT
+/**
+ * @swagger
+ * /getQuestionAndAnswer:
+ *   post:
+ *     summary: Obtenha uma resposta da IA do ChatGPT
+ *     tags: [ChatGPT]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               question:
+ *                 type: string
+ *                 example: "O que é Firebase?"
+ *     responses:
+ *       200:
+ *         description: Resposta gerada pelo ChatGPT
+ *       500:
+ *         description: Erro ao chamar a API do ChatGPT
+ */
+app.post('/getQuestionAndAnswer', async (req, res) => {
+    const {tema,nivel} = req.body;
+    
+    // if (!question) {
+    //     return res.status(400).json({ error: 'Pergunta é obrigatória' });
+    // }
+
+    try {
+        const answer = await getGroqApiResponse({tema,nivel});
+        res.json({ answer });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao obter resposta do ChatGPT '+error });
+    }
+});
 // Configuração da porta
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
