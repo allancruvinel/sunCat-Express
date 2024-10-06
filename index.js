@@ -204,8 +204,8 @@ app.get('/totalscore', async (req, res) => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             console.log('Usuário autenticado:', user.email);
-            console.log("user ",user);
-            res.json({ message: 'Login bem-sucedido!', user: user.email });
+            console.log("user ",user.accessToken);
+            res.json({ message: 'Login bem-sucedido!', user: user.email,access_token: user.accessToken });
         } catch (error) {
             let errorMessage;
             switch (error.code) {
