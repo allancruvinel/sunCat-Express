@@ -20,8 +20,8 @@ function cleanJsonResponse(response) {
             .replace(/[\n\r]/g, '') // Remove newlines
             .replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
             .replace(/'/g, '"'); // Replace single quotes with double quotes
-
-        return JSON.parse(cleanedResponse); // Try to parse the cleaned response
+        var response = JSON.parse(cleanedResponse);
+        return response; // Try to parse the cleaned response
     } catch (error) {
         console.error('Erro ao tentar limpar e parsear o JSON:', error);
         throw new Error('Falha ao processar a resposta do LLM como JSON');
