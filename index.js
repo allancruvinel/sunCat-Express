@@ -43,6 +43,15 @@ const app = express();
 // Middleware para JSON
 app.use(express.json());
 
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*"); // Permite todas as origens
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200); // Responde ao preflight
+    }
+    next();
+});
+
 // Configuração do Swagger
 const swaggerOptions = {
     swaggerDefinition: {
@@ -90,7 +99,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
  *       400:
  *         description: Erro de validação ou ao criar usuário
  */
-app.post('/cadastro', 
+app.post('/cadastro',
     body('email').isEmail().withMessage('Email inválido'),
     body('password').isLength({ min: 6 }).withMessage('A senha deve ter pelo menos 6 caracteres'),
     async (req, res) => {
@@ -99,13 +108,12 @@ app.post('/cadastro',
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { email, password,city,country } = req.body;
+        const { email, password, city, country } = req.body;
 
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
             const user = userCredential.user;
-            
+
             const query = `
             INSERT INTO usuario (email, city, country)
             VALUES ($1, $2, $3) RETURNING *;
